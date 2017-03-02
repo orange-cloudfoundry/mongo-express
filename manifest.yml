@@ -1,8 +1,4 @@
 ---
-declared-services:
-  db-mongo:
-    label: mongodb
-    plan: 100
 applications:
 - name: mongo-express
   host: mongo-express
