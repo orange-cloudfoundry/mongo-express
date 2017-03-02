@@ -2,6 +2,7 @@
 applications:
 - name: mongo-express
   host: mongo-express
+  domain: fr1-paas-cf-apps.fr
   memory: 128M
   services:
     - db-mongo
