@@ -9,13 +9,20 @@ if (typeof process.env.MONGODB_PORT === 'string') {
   process.env.ME_CONFIG_MONGODB_PORT    = mongoConnection.port;
 }
 
-// Accesing Bluemix variable to get MongoDB info
+// Accesing CF variable to get MongoDB info
 if (process.env.VCAP_SERVICES) {
-  var dbLabel = 'mongodb-2.4';
+  var dbLabel = 'mongodb';
   var env = JSON.parse(process.env.VCAP_SERVICES);
+  
   if (env[dbLabel]) {
     mongo = env[dbLabel][0].credentials;
+    
   }
+  mongo.dbname=mongo.uri.split('/')[3];
+  mongo.hostname=mongo.uri.split('@')[1].split('/')[0].split(':')[0];
+  mongo.port=mongo.uri.split('@')[1].split('/')[0].split(':')[1];
+  mongo.username=mongo.uri.split('@')[0].split(':')[1].split('//')[1];
+  mongo.password=mongo.uri.split('@')[0].split(':')[2];
 } else {
   mongo = {
     db:       'db',
@@ -34,7 +41,7 @@ module.exports = {
   mongodb: {
     //server: mongodb hostname or IP address
     //for replica set, use array of string instead
-    server: (meConfigMongodbServer.length > 1 ? meConfigMongodbServer : meConfigMongodbServer[0]) || mongo.host,
+    server: (meConfigMongodbServer.length > 1 ? meConfigMongodbServer : meConfigMongodbServer[0]) || mongo.hostname,
     port:   process.env.ME_CONFIG_MONGODB_PORT    || mongo.port,
 
     //ssl: connect to the server using secure SSL
@@ -65,7 +72,7 @@ module.exports = {
        * Add as many databases as you want!
        */
       {
-        database: process.env.ME_CONFIG_MONGODB_AUTH_DATABASE || mongo.db,
+        database: process.env.ME_CONFIG_MONGODB_AUTH_DATABASE || mongo.dbname,
         username: process.env.ME_CONFIG_MONGODB_AUTH_USERNAME || mongo.username,
         password: process.env.ME_CONFIG_MONGODB_AUTH_PASSWORD || mongo.password,
       },
@@ -90,8 +97,8 @@ module.exports = {
     baseUrl: process.env.ME_CONFIG_SITE_BASEURL || '/',
     cookieKeyName: 'mongo-express',
     cookieSecret:     process.env.ME_CONFIG_SITE_COOKIESECRET   || 'cookiesecret',
-    host:             process.env.VCAP_APP_HOST                 || 'localhost',
-    port:             process.env.VCAP_APP_PORT                 || 8081,
+    host:             process.env.VCAP_APP_HOST                 || '0.0.0.0',
+    port:             process.env.VCAP_APP_PORT                 || 8080,
     requestSizeLimit: process.env.ME_CONFIG_REQUEST_SIZE        || '50mb',
     sessionSecret:    process.env.ME_CONFIG_SITE_SESSIONSECRET  || 'sessionsecret',
     sslCert:          process.env.ME_CONFIG_SITE_SSL_CRT_PATH   || '',
